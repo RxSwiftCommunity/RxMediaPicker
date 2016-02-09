@@ -26,7 +26,7 @@ public enum RxMediaPickerError: ErrorType {
     
     private var currentAction: RxMediaPickerAction?
     
-    var deviceHasCamera: Bool {
+    public var deviceHasCamera: Bool {
         return UIImagePickerController.isSourceTypeAvailable(.Camera)
     }
     
