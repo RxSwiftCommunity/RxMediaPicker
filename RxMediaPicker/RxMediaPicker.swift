@@ -124,37 +124,81 @@ public enum RxMediaPickerError: ErrorType {
         }
     }
     
-    func processVideo(info: [String : AnyObject], observer: AnyObserver<NSURL>, maxDuration: NSTimeInterval) {
-        if let videoUrl = info[UIImagePickerControllerMediaURL] as? NSURL {
-            let asset = AVURLAsset(URL: videoUrl)
-            let duration = CMTimeGetSeconds(asset.duration)
-            
-            if duration > maxDuration {
-                observer.on(.Error(RxMediaPickerError.VideoMaximumDurationExceeded))
-            } else {
-                observer.on(.Next(videoUrl))
-                observer.on(.Completed)
-            }
-        } else {
+    func processVideo(info: [String : AnyObject], observer: AnyObserver<NSURL>, maxDuration: NSTimeInterval, picker: UIImagePickerController) {
+        
+        guard let videoURL = info[UIImagePickerControllerMediaURL] as? NSURL else {
             observer.on(.Error(RxMediaPickerError.GeneralError))
+            dismissPicker(picker)
+            return
         }
+        
+        if let editedStart = info["_UIImagePickerControllerVideoEditingStart"] as? NSNumber,
+            editedEnd = info["_UIImagePickerControllerVideoEditingEnd"] as? NSNumber {
+                
+                let start = Int64(editedStart.doubleValue * 1000)
+                let end = Int64(editedEnd.doubleValue * 1000)
+                let cachesDirectory = NSSearchPathForDirectoriesInDomains(.CachesDirectory, .UserDomainMask, true).first!
+                let editedVideoURL = NSURL(fileURLWithPath: cachesDirectory).URLByAppendingPathComponent("\(NSUUID().UUIDString).mov", isDirectory: false)
+                let asset = AVURLAsset(URL: videoURL)
+                
+                if let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetHighestQuality) {
+                    exportSession.outputURL = editedVideoURL
+                    exportSession.outputFileType = AVFileTypeQuickTimeMovie
+                    exportSession.timeRange = CMTimeRange(start: CMTime(value: start, timescale: 1000), duration: CMTime(value: end - start, timescale: 1000))
+                    
+                    exportSession.exportAsynchronouslyWithCompletionHandler({
+                        switch exportSession.status {
+                        case .Completed:
+                            self.processVideoURL(editedVideoURL, observer: observer, maxDuration: maxDuration, picker: picker)
+                        case .Failed: fallthrough
+                        case .Cancelled:
+                            observer.on(.Error(RxMediaPickerError.GeneralError))
+                            self.dismissPicker(picker)
+                        default: break
+                        }
+                    })
+                }
+        } else {
+            processVideoURL(videoURL, observer: observer, maxDuration: maxDuration, picker: picker)
+        }
+    }
+    
+    private func processVideoURL(url: NSURL, observer: AnyObserver<NSURL>, maxDuration: NSTimeInterval, picker: UIImagePickerController) {
+        
+        let asset = AVURLAsset(URL: url)
+        let duration = CMTimeGetSeconds(asset.duration)
+        
+        if duration > maxDuration {
+            observer.on(.Error(RxMediaPickerError.VideoMaximumDurationExceeded))
+        } else {
+            observer.on(.Next(url))
+            observer.on(.Completed)
+        }
+        
+        dismissPicker(picker)
+    }
+    
+    private func dismissPicker(picker: UIImagePickerController) {
+        delegate?.dismissPicker(picker)
     }
     
     // UIImagePickerControllerDelegate
     
     public func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
-        delegate?.dismissPicker(picker)
         
         if let action = currentAction {
             switch action {
-            case .Photo(let observer):                  processPhoto(info, observer: observer)
-            case .Video(let observer, let maxDuration): processVideo(info, observer: observer, maxDuration: maxDuration)
+            case .Photo(let observer):
+                processPhoto(info, observer: observer)
+                dismissPicker(picker)
+            case .Video(let observer, let maxDuration):
+                processVideo(info, observer: observer, maxDuration: maxDuration, picker: picker)
             }
         }
     }
     
     public func imagePickerControllerDidCancel(picker: UIImagePickerController) {
-        delegate?.dismissPicker(picker)
+        dismissPicker(picker)
         
         if let action = currentAction {
             switch action {
