@@ -10,6 +10,7 @@ If you ever used UIImagePickerController you know how it can become quite verbos
 
 - [x] Reactive wrapper built around UIImagePickerController.
 - [x] Provides an interface for common operations like picking photos from the library, recording videos, etc.
+- [x] Handles edited videos properly - something UIImagePickerController doesn't do for you!
 - [x] Decouples the typical UIImagePickerController boilerplate from your code.
 - [x] Reduces the complexity when compared to UIImagePickerController.
 - [x] Easy to integrate and reuse accross your app.
@@ -122,7 +123,7 @@ $ brew install carthage
 To integrate RxMediaPicker into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "ruipfcosta/RxMediaPicker"
+github "ruipfcosta/RxMediaPicker" "master"
 ```
 
 Run `carthage` to build the framework and drag the built `RxMediaPicker.framework` into your Xcode project.
