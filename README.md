@@ -125,7 +125,7 @@ $ brew install carthage
 To integrate RxMediaPicker into your Xcode project using Carthage, specify it in your `Cartfile`:
 
 ```ogdl
-github "ruipfcosta/RxMediaPicker" "master"
+github "RxSwiftCommunity/RxMediaPicker" "master"
 ```
 
 Run `carthage` to build the framework and drag the built `RxMediaPicker.framework` into your Xcode project.
