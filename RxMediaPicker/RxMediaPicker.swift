@@ -6,7 +6,7 @@ import AVFoundation
 
 enum RxMediaPickerAction {
     case photo(observer: AnyObserver<(UIImage, UIImage?)>)
-    case video(observer: AnyObserver<NSURL>, maxDuration: NSTimeInterval)
+    case video(observer: AnyObserver<URL>, maxDuration: TimeInterval)
 }
 
 public enum RxMediaPickerError: Error {
@@ -16,8 +16,8 @@ public enum RxMediaPickerError: Error {
 }
 
 @objc public protocol RxMediaPickerDelegate {
-    func presentPicker(_ picker: UIImagePickerController)
-    func dismissPicker(_ picker: UIImagePickerController)
+    func present(picker: UIImagePickerController)
+    func dismiss(picker: UIImagePickerController)
 }
 
 @objc open class RxMediaPicker: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
@@ -34,13 +34,13 @@ public enum RxMediaPickerError: Error {
         self.delegate = delegate
     }
     
-    open func recordVideo(device: UIImagePickerControllerCameraDevice = .Rear, quality: UIImagePickerControllerQualityType = .TypeMedium, maximumDuration: NSTimeInterval = 600, editable: Bool = false) -> Observable<NSURL> {
+    open func recordVideo(device: UIImagePickerControllerCameraDevice = .rear, quality: UIImagePickerControllerQualityType = .typeMedium, maximumDuration: TimeInterval = 600, editable: Bool = false) -> Observable<URL> {
         
         return Observable.create { observer in
-            self.currentAction = RxMediaPickerAction.Video(observer: observer, maxDuration: maximumDuration)
+            self.currentAction = RxMediaPickerAction.video(observer: observer, maxDuration: maximumDuration)
             
             let picker = UIImagePickerController()
-            picker.sourceType = .Camera
+            picker.sourceType = .camera
             picker.mediaTypes = [kUTTypeMovie as String]
             picker.videoMaximumDuration = maximumDuration
             picker.videoQuality = quality
@@ -51,16 +51,16 @@ public enum RxMediaPickerError: Error {
                 picker.cameraDevice = device
             }
             
-            self.delegate?.presentPicker(picker)
+            self.delegate?.present(picker: picker)
             
-            return NopDisposable.instance
+            return Disposables.create()
         }
     }
     
-    open func selectVideo(_ source: UIImagePickerControllerSourceType = .PhotoLibrary, maximumDuration: NSTimeInterval = 600, editable: Bool = false) -> Observable<NSURL> {
+    open func selectVideo(source: UIImagePickerControllerSourceType = .photoLibrary, maximumDuration: TimeInterval = 600, editable: Bool = false) -> Observable<URL> {
         
         return Observable.create({ observer in
-            self.currentAction = RxMediaPickerAction.Video(observer: observer, maxDuration: maximumDuration)
+            self.currentAction = RxMediaPickerAction.video(observer: observer, maxDuration: maximumDuration)
             
             let picker = UIImagePickerController()
             picker.sourceType = source
@@ -68,19 +68,19 @@ public enum RxMediaPickerError: Error {
             picker.allowsEditing = editable
             picker.delegate = self
             
-            self.delegate?.presentPicker(picker)
+            self.delegate?.present(picker: picker)
             
-            return NopDisposable.instance
+            return Disposables.create()
         })
     }
     
-    open func takePhoto(device: UIImagePickerControllerCameraDevice = .Rear, flashMode: UIImagePickerControllerCameraFlashMode = .Auto, editable: Bool = false) -> Observable<(UIImage, UIImage?)> {
+    open func takePhoto(device: UIImagePickerControllerCameraDevice = .rear, flashMode: UIImagePickerControllerCameraFlashMode = .auto, editable: Bool = false) -> Observable<(UIImage, UIImage?)> {
         
         return Observable.create({ observer in
-            self.currentAction = RxMediaPickerAction.Photo(observer: observer)
+            self.currentAction = RxMediaPickerAction.photo(observer: observer)
             
             let picker = UIImagePickerController()
-            picker.sourceType = .Camera
+            picker.sourceType = .camera
             picker.allowsEditing = editable
             picker.delegate = self
             
@@ -88,46 +88,46 @@ public enum RxMediaPickerError: Error {
                 picker.cameraDevice = device
             }
             
-            if UIImagePickerController.isFlashAvailableForCameraDevice(picker.cameraDevice) {
+            if UIImagePickerController.isFlashAvailable(for: picker.cameraDevice) {
                 picker.cameraFlashMode = flashMode
             }
             
-            self.delegate?.presentPicker(picker)
+            self.delegate?.present(picker: picker)
             
-            return NopDisposable.instance
+            return Disposables.create()
         })
     }
     
-    open func selectImage(_ source: UIImagePickerControllerSourceType = .PhotoLibrary, editable: Bool = false) -> Observable<(UIImage, UIImage?)> {
+    open func selectImage(source: UIImagePickerControllerSourceType = .photoLibrary, editable: Bool = false) -> Observable<(UIImage, UIImage?)> {
         
         return Observable.create { observer in
-            self.currentAction = RxMediaPickerAction.Photo(observer: observer)
+            self.currentAction = RxMediaPickerAction.photo(observer: observer)
             
             let picker = UIImagePickerController()
             picker.sourceType = source
             picker.allowsEditing = editable
             picker.delegate = self
             
-            self.delegate?.presentPicker(picker)
+            self.delegate?.present(picker: picker)
             
-            return NopDisposable.instance
+            return Disposables.create()
         }
     }
     
-    func processPhoto(_ info: [String : AnyObject], observer: AnyObserver<(UIImage, UIImage?)>) {
+    func processPhoto(info: [String : AnyObject], observer: AnyObserver<(UIImage, UIImage?)>) {
         if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
             let editedImage: UIImage? = info[UIImagePickerControllerEditedImage] as? UIImage
-            observer.on(.Next(image, editedImage))
-            observer.on(.Completed)
+            observer.on(.next(image, editedImage))
+            observer.on(.completed)
         } else {
-            observer.on(.Error(RxMediaPickerError.GeneralError))
+            observer.on(.error(RxMediaPickerError.generalError))
         }
     }
     
-    func processVideo(_ info: [String : AnyObject], observer: AnyObserver<NSURL>, maxDuration: TimeInterval, picker: UIImagePickerController) {
+    func processVideo(info: [String : Any], observer: AnyObserver<URL>, maxDuration: TimeInterval, picker: UIImagePickerController) {
         
         guard let videoURL = info[UIImagePickerControllerMediaURL] as? URL else {
-            observer.on(.Error(RxMediaPickerError.GeneralError))
+            observer.on(.error(RxMediaPickerError.generalError))
             dismissPicker(picker)
             return
         }
@@ -149,37 +149,37 @@ public enum RxMediaPickerError: Error {
                     exportSession.exportAsynchronously(completionHandler: {
                         switch exportSession.status {
                         case .completed:
-                            self.processVideoURL(editedVideoURL, observer: observer, maxDuration: maxDuration, picker: picker)
+                            self.processVideo(url: editedVideoURL, observer: observer, maxDuration: maxDuration, picker: picker)
                         case .failed: fallthrough
                         case .cancelled:
-                            observer.on(.Error(RxMediaPickerError.GeneralError))
+                            observer.on(.error(RxMediaPickerError.generalError))
                             self.dismissPicker(picker)
                         default: break
                         }
                     })
                 }
         } else {
-            processVideoURL(videoURL, observer: observer, maxDuration: maxDuration, picker: picker)
+            processVideo(url: videoURL, observer: observer, maxDuration: maxDuration, picker: picker)
         }
     }
     
-    fileprivate func processVideoURL(_ url: URL, observer: AnyObserver<NSURL>, maxDuration: TimeInterval, picker: UIImagePickerController) {
+    fileprivate func processVideo(url: URL, observer: AnyObserver<URL>, maxDuration: TimeInterval, picker: UIImagePickerController) {
         
         let asset = AVURLAsset(url: url)
         let duration = CMTimeGetSeconds(asset.duration)
         
         if duration > maxDuration {
-            observer.on(.Error(RxMediaPickerError.VideoMaximumDurationExceeded))
+            observer.on(.error(RxMediaPickerError.videoMaximumDurationExceeded))
         } else {
-            observer.on(.Next(url))
-            observer.on(.Completed)
+            observer.on(.next(url))
+            observer.on(.completed)
         }
         
         dismissPicker(picker)
     }
     
     fileprivate func dismissPicker(_ picker: UIImagePickerController) {
-        delegate?.dismissPicker(picker)
+        delegate?.dismiss(picker: picker)
     }
     
     // UIImagePickerControllerDelegate
@@ -188,11 +188,11 @@ public enum RxMediaPickerError: Error {
         
         if let action = currentAction {
             switch action {
-            case .Photo(let observer):
-                processPhoto(info, observer: observer)
+            case .photo(let observer):
+                processPhoto(info: info as [String : AnyObject], observer: observer)
                 dismissPicker(picker)
-            case .Video(let observer, let maxDuration):
-                processVideo(info, observer: observer, maxDuration: maxDuration, picker: picker)
+            case .video(let observer, let maxDuration):
+                processVideo(info: info, observer: observer, maxDuration: maxDuration, picker: picker)
             }
         }
     }
@@ -202,8 +202,8 @@ public enum RxMediaPickerError: Error {
         
         if let action = currentAction {
             switch action {
-            case .Photo(let observer):      observer.on(.Error(RxMediaPickerError.Canceled))
-            case .Video(let observer, _):   observer.on(.Error(RxMediaPickerError.Canceled))
+            case .photo(let observer):      observer.on(.error(RxMediaPickerError.canceled))
+            case .video(let observer, _):   observer.on(.error(RxMediaPickerError.canceled))
             }
         }
     }
