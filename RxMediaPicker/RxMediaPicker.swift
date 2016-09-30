@@ -5,36 +5,36 @@ import UIKit
 import AVFoundation
 
 enum RxMediaPickerAction {
-    case Photo(observer: AnyObserver<(UIImage, UIImage?)>)
-    case Video(observer: AnyObserver<NSURL>, maxDuration: NSTimeInterval)
+    case photo(observer: AnyObserver<(UIImage, UIImage?)>)
+    case video(observer: AnyObserver<NSURL>, maxDuration: NSTimeInterval)
 }
 
-public enum RxMediaPickerError: ErrorType {
-    case GeneralError
-    case Canceled
-    case VideoMaximumDurationExceeded
+public enum RxMediaPickerError: Error {
+    case generalError
+    case canceled
+    case videoMaximumDurationExceeded
 }
 
 @objc public protocol RxMediaPickerDelegate {
-    func presentPicker(picker: UIImagePickerController)
-    func dismissPicker(picker: UIImagePickerController)
+    func presentPicker(_ picker: UIImagePickerController)
+    func dismissPicker(_ picker: UIImagePickerController)
 }
 
-@objc public class RxMediaPicker: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+@objc open class RxMediaPicker: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
     weak var delegate: RxMediaPickerDelegate?
     
-    private var currentAction: RxMediaPickerAction?
+    fileprivate var currentAction: RxMediaPickerAction?
     
-    public var deviceHasCamera: Bool {
-        return UIImagePickerController.isSourceTypeAvailable(.Camera)
+    open var deviceHasCamera: Bool {
+        return UIImagePickerController.isSourceTypeAvailable(.camera)
     }
     
     public init(delegate: RxMediaPickerDelegate) {
         self.delegate = delegate
     }
     
-    public func recordVideo(device device: UIImagePickerControllerCameraDevice = .Rear, quality: UIImagePickerControllerQualityType = .TypeMedium, maximumDuration: NSTimeInterval = 600, editable: Bool = false) -> Observable<NSURL> {
+    open func recordVideo(device: UIImagePickerControllerCameraDevice = .Rear, quality: UIImagePickerControllerQualityType = .TypeMedium, maximumDuration: NSTimeInterval = 600, editable: Bool = false) -> Observable<NSURL> {
         
         return Observable.create { observer in
             self.currentAction = RxMediaPickerAction.Video(observer: observer, maxDuration: maximumDuration)
@@ -57,7 +57,7 @@ public enum RxMediaPickerError: ErrorType {
         }
     }
     
-    public func selectVideo(source: UIImagePickerControllerSourceType = .PhotoLibrary, maximumDuration: NSTimeInterval = 600, editable: Bool = false) -> Observable<NSURL> {
+    open func selectVideo(_ source: UIImagePickerControllerSourceType = .PhotoLibrary, maximumDuration: NSTimeInterval = 600, editable: Bool = false) -> Observable<NSURL> {
         
         return Observable.create({ observer in
             self.currentAction = RxMediaPickerAction.Video(observer: observer, maxDuration: maximumDuration)
@@ -74,7 +74,7 @@ public enum RxMediaPickerError: ErrorType {
         })
     }
     
-    public func takePhoto(device device: UIImagePickerControllerCameraDevice = .Rear, flashMode: UIImagePickerControllerCameraFlashMode = .Auto, editable: Bool = false) -> Observable<(UIImage, UIImage?)> {
+    open func takePhoto(device: UIImagePickerControllerCameraDevice = .Rear, flashMode: UIImagePickerControllerCameraFlashMode = .Auto, editable: Bool = false) -> Observable<(UIImage, UIImage?)> {
         
         return Observable.create({ observer in
             self.currentAction = RxMediaPickerAction.Photo(observer: observer)
@@ -98,7 +98,7 @@ public enum RxMediaPickerError: ErrorType {
         })
     }
     
-    public func selectImage(source: UIImagePickerControllerSourceType = .PhotoLibrary, editable: Bool = false) -> Observable<(UIImage, UIImage?)> {
+    open func selectImage(_ source: UIImagePickerControllerSourceType = .PhotoLibrary, editable: Bool = false) -> Observable<(UIImage, UIImage?)> {
         
         return Observable.create { observer in
             self.currentAction = RxMediaPickerAction.Photo(observer: observer)
@@ -114,7 +114,7 @@ public enum RxMediaPickerError: ErrorType {
         }
     }
     
-    func processPhoto(info: [String : AnyObject], observer: AnyObserver<(UIImage, UIImage?)>) {
+    func processPhoto(_ info: [String : AnyObject], observer: AnyObserver<(UIImage, UIImage?)>) {
         if let image = info[UIImagePickerControllerOriginalImage] as? UIImage {
             let editedImage: UIImage? = info[UIImagePickerControllerEditedImage] as? UIImage
             observer.on(.Next(image, editedImage))
@@ -124,34 +124,34 @@ public enum RxMediaPickerError: ErrorType {
         }
     }
     
-    func processVideo(info: [String : AnyObject], observer: AnyObserver<NSURL>, maxDuration: NSTimeInterval, picker: UIImagePickerController) {
+    func processVideo(_ info: [String : AnyObject], observer: AnyObserver<NSURL>, maxDuration: TimeInterval, picker: UIImagePickerController) {
         
-        guard let videoURL = info[UIImagePickerControllerMediaURL] as? NSURL else {
+        guard let videoURL = info[UIImagePickerControllerMediaURL] as? URL else {
             observer.on(.Error(RxMediaPickerError.GeneralError))
             dismissPicker(picker)
             return
         }
         
         if let editedStart = info["_UIImagePickerControllerVideoEditingStart"] as? NSNumber,
-            editedEnd = info["_UIImagePickerControllerVideoEditingEnd"] as? NSNumber {
+            let editedEnd = info["_UIImagePickerControllerVideoEditingEnd"] as? NSNumber {
                 
                 let start = Int64(editedStart.doubleValue * 1000)
                 let end = Int64(editedEnd.doubleValue * 1000)
-                let cachesDirectory = NSSearchPathForDirectoriesInDomains(.CachesDirectory, .UserDomainMask, true).first!
-                let editedVideoURL = NSURL(fileURLWithPath: cachesDirectory).URLByAppendingPathComponent("\(NSUUID().UUIDString).mov", isDirectory: false)
-                let asset = AVURLAsset(URL: videoURL)
+                let cachesDirectory = NSSearchPathForDirectoriesInDomains(.cachesDirectory, .userDomainMask, true).first!
+                let editedVideoURL = URL(fileURLWithPath: cachesDirectory).appendingPathComponent("\(UUID().uuidString).mov", isDirectory: false)
+                let asset = AVURLAsset(url: videoURL)
                 
                 if let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetHighestQuality) {
                     exportSession.outputURL = editedVideoURL
                     exportSession.outputFileType = AVFileTypeQuickTimeMovie
                     exportSession.timeRange = CMTimeRange(start: CMTime(value: start, timescale: 1000), duration: CMTime(value: end - start, timescale: 1000))
                     
-                    exportSession.exportAsynchronouslyWithCompletionHandler({
+                    exportSession.exportAsynchronously(completionHandler: {
                         switch exportSession.status {
-                        case .Completed:
+                        case .completed:
                             self.processVideoURL(editedVideoURL, observer: observer, maxDuration: maxDuration, picker: picker)
-                        case .Failed: fallthrough
-                        case .Cancelled:
+                        case .failed: fallthrough
+                        case .cancelled:
                             observer.on(.Error(RxMediaPickerError.GeneralError))
                             self.dismissPicker(picker)
                         default: break
@@ -163,9 +163,9 @@ public enum RxMediaPickerError: ErrorType {
         }
     }
     
-    private func processVideoURL(url: NSURL, observer: AnyObserver<NSURL>, maxDuration: NSTimeInterval, picker: UIImagePickerController) {
+    fileprivate func processVideoURL(_ url: URL, observer: AnyObserver<NSURL>, maxDuration: TimeInterval, picker: UIImagePickerController) {
         
-        let asset = AVURLAsset(URL: url)
+        let asset = AVURLAsset(url: url)
         let duration = CMTimeGetSeconds(asset.duration)
         
         if duration > maxDuration {
@@ -178,13 +178,13 @@ public enum RxMediaPickerError: ErrorType {
         dismissPicker(picker)
     }
     
-    private func dismissPicker(picker: UIImagePickerController) {
+    fileprivate func dismissPicker(_ picker: UIImagePickerController) {
         delegate?.dismissPicker(picker)
     }
     
     // UIImagePickerControllerDelegate
     
-    public func imagePickerController(picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : AnyObject]) {
+    open func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [String : Any]) {
         
         if let action = currentAction {
             switch action {
@@ -197,7 +197,7 @@ public enum RxMediaPickerError: ErrorType {
         }
     }
     
-    public func imagePickerControllerDidCancel(picker: UIImagePickerController) {
+    open func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
         dismissPicker(picker)
         
         if let action = currentAction {
