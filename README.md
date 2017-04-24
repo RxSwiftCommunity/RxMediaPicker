@@ -8,7 +8,7 @@ If you're interested, check the resulting article [RxMediaPicker — picking
 
 **Note:** As RxMediaPicker is still in its early days, the interface may change in future versions. 
 
-##Features
+## Features
 
 - [x] Reactive wrapper built around UIImagePickerController.
 - [x] Provides an interface for common operations like picking photos from the library, recording videos, etc.
@@ -17,7 +17,7 @@ If you're interested, check the resulting article [RxMediaPicker — picking
 - [x] Reduces the complexity when compared to UIImagePickerController.
 - [x] Easy to integrate and reuse accross your app.
 
-##Example
+## Example
 
 For a more complete example please check the demo app included (ideally run it on a device). This is how you would record a video using the camera:
 
@@ -49,9 +49,9 @@ func recordVideo() {
 }
 ```
 
-##Usage
+## Usage
 
-###Available operations
+### Available operations
 
 Based on their names, the operations available on RxMediaPicker should be self-explanatory. You can record a video, or pick an existing one stored on the device, and the same thing happens for photos. The only thing to note here is that picking a video will get you the video url, and picking a photo will get you a tuple consisting in the original image and an optional edited image (if any edits were made).
 
@@ -77,7 +77,7 @@ func selectImage(source: UIImagePickerControllerSourceType = .PhotoLibrary,
                  editable: Bool = false) -> Observable<(UIImage, UIImage?)>
 ```
 
-###RxMediaPickerDelegate
+### RxMediaPickerDelegate
 
 ```swift
 func presentPicker(picker: UIImagePickerController)
@@ -87,14 +87,14 @@ func dismissPicker(picker: UIImagePickerController)
 To be able to use RxMediaPicker you will need to adopt the protocol RxMediaPickerDelegate. This is required to indicate RxMediaPicker how the camera/photos picker should be presented. For example, you may want to present the photos library picker in a popover on the iPad, and use the entire screen on the iPhone.
 
 
-##Requirements
+## Requirements
 
 * iOS 8.0+
 * Xcode 7.0+
 
-##Instalation
+## Instalation
 
-###CocoaPods
+### CocoaPods
 
 [CocoaPods](https://cocoapods.org/) is a dependency manager for Cocoa projects. You can install it with the following command:
 
