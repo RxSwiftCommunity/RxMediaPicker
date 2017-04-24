@@ -9,27 +9,28 @@ class ViewController: UIViewController, RxMediaPickerDelegate {
     var moviePlayer: MPMoviePlayerController!
     let disposeBag = DisposeBag()
     
-    lazy var buttonPhoto: UIButton  = self.makeButton("Pick photo", target: self, action: "pickPhoto")
-    lazy var buttonVideo: UIButton  = self.makeButton("Record video", target: self, action: "recordVideo")
+    lazy var buttonPhoto: UIButton  = self.makeButton(title: "Pick photo", target: self, action: #selector(ViewController.pickPhoto))
+    lazy var buttonVideo: UIButton  = self.makeButton(title: "Record video", target: self, action: #selector(ViewController.recordVideo))
     lazy var container: UIView      = self.makeContainer()
     
     override func loadView() {
         super.loadView()
-        
+
         view.addSubview(buttonPhoto)
         view.addSubview(buttonVideo)
         view.addSubview(container)
         
         let views = ["buttonPhoto": buttonPhoto, "buttonVideo": buttonVideo, "container": container]
+
+        var constraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|-50-[buttonPhoto]-20-[buttonVideo]-20-[container(==200)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: .none, views: views)
+
+        constraints += NSLayoutConstraint.constraints(withVisualFormat: "H:[container(==200)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: .none, views: views)
         
-        var constraints = NSLayoutConstraint.constraintsWithVisualFormat("V:|-50-[buttonPhoto]-20-[buttonVideo]-20-[container(==200)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: .None, views: views)
-        constraints += NSLayoutConstraint.constraintsWithVisualFormat("H:[container(==200)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: .None, views: views)
+        constraints.append(NSLayoutConstraint(item: buttonPhoto, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: buttonVideo, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1, constant: 0))
+        constraints.append(NSLayoutConstraint(item: container, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1, constant: 0))
         
-        constraints.append(NSLayoutConstraint(item: buttonPhoto, attribute: .CenterX, relatedBy: .Equal, toItem: view, attribute: .CenterX, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: buttonVideo, attribute: .CenterX, relatedBy: .Equal, toItem: view, attribute: .CenterX, multiplier: 1, constant: 0))
-        constraints.append(NSLayoutConstraint(item: container, attribute: .CenterX, relatedBy: .Equal, toItem: view, attribute: .CenterX, multiplier: 1, constant: 0))
-        
-        NSLayoutConstraint.activateConstraints(constraints)
+        NSLayoutConstraint.activate(constraints)
     }
     
     override func viewDidLoad() {
@@ -40,9 +41,9 @@ class ViewController: UIViewController, RxMediaPickerDelegate {
     func makeButton(title: String, target: AnyObject, action: Selector) -> UIButton {
         let b = UIButton()
         b.translatesAutoresizingMaskIntoConstraints = false
-        b.setTitle(title, forState: .Normal)
-        b.addTarget(target, action: action, forControlEvents: .TouchUpInside)
-        b.setTitleColor(UIColor.blueColor(), forState: .Normal)
+        b.setTitle(title, for: .normal)
+        b.addTarget(target, action: action, for: .touchUpInside)
+        b.setTitleColor(.blue, for: .normal)
         
         return b
     }
@@ -50,7 +51,7 @@ class ViewController: UIViewController, RxMediaPickerDelegate {
     func makeContainer() -> UIView {
         let v = UIView()
         v.translatesAutoresizingMaskIntoConstraints = false
-        v.backgroundColor = UIColor.blackColor()
+        v.backgroundColor = .black
         
         return v
     }
@@ -71,37 +72,39 @@ class ViewController: UIViewController, RxMediaPickerDelegate {
                 self.removeAllSubviews()
                 self.container.addSubview(imageView)
             }, onError: { error in
-                print("Got an error")
+                print("Picker photo error: \(error)")
             }, onCompleted: {
                 print("Completed")
             }, onDisposed: {
                 print("Disposed")
             })
-            .addDisposableTo(disposeBag)
+            .disposed(by: disposeBag)
     }
         
     func recordVideo() {
         #if (arch(i386) || arch(x86_64))
-            let alert = UIAlertController(title: "Error - Simulator", message: "Video recording not available on the simulator", preferredStyle: .Alert)
-            alert.addAction(UIAlertAction(title: "OK", style: .Default, handler: .None))
-            presentViewController(alert, animated: true, completion: .None)
+            let alert = UIAlertController(title: "Error - Simulator", message: "Video recording not available on the simulator", preferredStyle: .alert)
+            alert.addAction(UIAlertAction(title: "OK", style: .default, handler: .none))
+            present(alert, animated: true, completion: nil)
             return
         #endif
         
-        picker.selectVideo(.Camera, maximumDuration: 10, editable: true)
-            .observeOn(MainScheduler.instance)
-            .subscribe(onNext: processUrl
-            , onError: { error in
-                print("Got an error")
-            }, onCompleted: {
-                print("Completed")
-            }, onDisposed: {
-                print("Disposed")
-            })
-            .addDisposableTo(disposeBag)
+        picker.selectVideo(source: .camera, maximumDuration: 10, editable: true)
+              .observeOn(MainScheduler.instance)
+              .subscribe(onNext: processUrl,
+                         onError: { error in
+                            print("Record video error \(error)")
+                         },
+                         onCompleted: {
+                            print("Completed")
+                         },
+                         onDisposed: {
+                            print("Disposed")
+                         })
+              .disposed(by: disposeBag)
     }
     
-    func processUrl(url: NSURL) {
+    func processUrl(url: URL) {
         moviePlayer = MPMoviePlayerController(contentURL: url)
         
         removeAllSubviews()
@@ -113,15 +116,17 @@ class ViewController: UIViewController, RxMediaPickerDelegate {
     }
 
     // RxMediaPickerDelegate
-    
-    func presentPicker(picker: UIImagePickerController) {
+    func present(picker: UIImagePickerController) {
+        if moviePlayer.playbackState == .playing {
+            moviePlayer.stop()
+        }
+
         print("Will present picker")
-        presentViewController(picker, animated: true, completion: .None)
+        present(picker, animated: true, completion: nil)
     }
-    
-    func dismissPicker(picker: UIImagePickerController) {
+
+    func dismiss(picker: UIImagePickerController) {
         print("Will dismiss picker")
-        dismissViewControllerAnimated(true, completion: .None)
+        dismiss(animated: true, completion: nil)
     }
-    
 }
