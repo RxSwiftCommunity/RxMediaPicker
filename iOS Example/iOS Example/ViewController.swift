@@ -117,7 +117,7 @@ class ViewController: UIViewController, RxMediaPickerDelegate {
 
     // RxMediaPickerDelegate
     func present(picker: UIImagePickerController) {
-        if moviePlayer.playbackState == .playing {
+        if moviePlayer != nil, moviePlayer.playbackState == .playing {
             moviePlayer.stop()
         }
 
