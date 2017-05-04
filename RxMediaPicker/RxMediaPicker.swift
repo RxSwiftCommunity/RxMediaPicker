@@ -120,11 +120,12 @@ public enum RxMediaPickerError: Error {
     
     func processPhoto(info: [String : AnyObject],
                       observer: AnyObserver<(UIImage, UIImage?)>) {
-        guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage,
-              let editedImage = info[UIImagePickerControllerEditedImage] as? UIImage else {
+        guard let image = info[UIImagePickerControllerOriginalImage] as? UIImage else {
             observer.on(.error(RxMediaPickerError.generalError))
             return
         }
+
+        let editedImage = info[UIImagePickerControllerEditedImage] as? UIImage
 
         observer.on(.next(image, editedImage))
         observer.on(.completed)
