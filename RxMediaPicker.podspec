@@ -1,6 +1,6 @@
 Pod::Spec.new do |s|
   s.name         = "RxMediaPicker"
-  s.version      = "1.0.0"
+  s.version      = "1.1.0"
   s.summary      = "A reactive wrapper built around UIImagePickerController."
   s.homepage     = "https://github.com/RxSwiftCommunity/RxMediaPicker"
   s.license      = { :type => "MIT", :file => "LICENSE" }
