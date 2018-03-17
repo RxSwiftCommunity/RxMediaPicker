@@ -127,7 +127,7 @@ public enum RxMediaPickerError: Error {
 
         let editedImage = info[UIImagePickerControllerEditedImage] as? UIImage
 
-        observer.on(.next(image, editedImage))
+        observer.on(.next((image, editedImage)))
         observer.on(.completed)
     }
     
@@ -155,7 +155,7 @@ public enum RxMediaPickerError: Error {
         
         if let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetHighestQuality) {
             exportSession.outputURL = editedVideoURL
-            exportSession.outputFileType = AVFileTypeQuickTimeMovie
+            exportSession.outputFileType = AVFileType.mov
             exportSession.timeRange = CMTimeRange(start: CMTime(value: start, timescale: 1000), duration: CMTime(value: end - start, timescale: 1000))
             
             exportSession.exportAsynchronously(completionHandler: {
