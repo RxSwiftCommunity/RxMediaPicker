@@ -9,5 +9,5 @@ Pod::Spec.new do |s|
   s.source       = { :git => 'https://github.com/RxSwiftCommunity/RxMediaPicker.git', :tag => s.version }
   s.source_files = "RxMediaPicker/*.swift"
   s.requires_arc = true
-  s.dependency 'RxSwift', '~> 3.4.0'
+  s.dependency 'RxSwift', '~> 4.3'
 end
