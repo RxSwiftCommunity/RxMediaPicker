@@ -22,9 +22,9 @@ class ViewController: UIViewController, RxMediaPickerDelegate {
         
         let views = ["buttonPhoto": buttonPhoto, "buttonVideo": buttonVideo, "container": container]
 
-        var constraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|-50-[buttonPhoto]-20-[buttonVideo]-20-[container(==200)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: .none, views: views)
+        var constraints = NSLayoutConstraint.constraints(withVisualFormat: "V:|-50-[buttonPhoto]-20-[buttonVideo]-20-[container(==200)]", options: NSLayoutConstraint.FormatOptions(rawValue: 0), metrics: .none, views: views)
 
-        constraints += NSLayoutConstraint.constraints(withVisualFormat: "H:[container(==200)]", options: NSLayoutFormatOptions(rawValue: 0), metrics: .none, views: views)
+        constraints += NSLayoutConstraint.constraints(withVisualFormat: "H:[container(==200)]", options: NSLayoutConstraint.FormatOptions(rawValue: 0), metrics: .none, views: views)
         
         constraints.append(NSLayoutConstraint(item: buttonPhoto, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1, constant: 0))
         constraints.append(NSLayoutConstraint(item: buttonVideo, attribute: .centerX, relatedBy: .equal, toItem: view, attribute: .centerX, multiplier: 1, constant: 0))
@@ -62,7 +62,7 @@ class ViewController: UIViewController, RxMediaPickerDelegate {
         }
     }
     
-    func pickPhoto() {
+    @objc func pickPhoto() {
         picker.selectImage(editable: true)
             .observeOn(MainScheduler.instance)
             .subscribe(onNext: { (image, editedImage) in
@@ -81,7 +81,7 @@ class ViewController: UIViewController, RxMediaPickerDelegate {
             .disposed(by: disposeBag)
     }
         
-    func recordVideo() {
+    @objc func recordVideo() {
         #if (arch(i386) || arch(x86_64))
             let alert = UIAlertController(title: "Error - Simulator", message: "Video recording not available on the simulator", preferredStyle: .alert)
             alert.addAction(UIAlertAction(title: "OK", style: .default, handler: .none))

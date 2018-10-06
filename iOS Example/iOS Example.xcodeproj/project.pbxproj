@@ -66,6 +66,7 @@
 				B388AB0C1C6567FA00726BCA /* RxMediaPicker.framework */,
 				B388AAF71C65648700726BCA /* iOS Example */,
 				B388AAF61C65648700726BCA /* Products */,
+				FC379B442167D6DA00D47524 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -87,6 +88,14 @@
 				B388AB041C65648700726BCA /* Info.plist */,
 			);
 			path = "iOS Example";
+			sourceTree = "<group>";
+		};
+		FC379B442167D6DA00D47524 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				B388AAE91C65640700726BCA /* RxSwift.framework */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -286,7 +295,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "pt.ruicosta.iOS-Example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Debug;
 		};
@@ -307,7 +316,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = "pt.ruicosta.iOS-Example";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE = "";
-				SWIFT_VERSION = 3.0;
+				SWIFT_VERSION = 4.2;
 			};
 			name = Release;
 		};
