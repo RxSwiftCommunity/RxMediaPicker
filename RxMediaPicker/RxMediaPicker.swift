@@ -52,7 +52,7 @@ public enum RxMediaPickerError: Error {
                 picker.cameraDevice = device
             }
             
-            self.presentPicker(picker)
+            self.present(picker)
             
             return Disposables.create()
         }
@@ -71,7 +71,7 @@ public enum RxMediaPickerError: Error {
             picker.delegate = self
             picker.videoMaximumDuration = maximumDuration
             
-            self.presentPicker(picker)
+            self.present(picker)
             
             return Disposables.create()
         }
@@ -96,7 +96,7 @@ public enum RxMediaPickerError: Error {
                 picker.cameraFlashMode = flashMode
             }
             
-            self.presentPicker(picker)
+            self.present(picker)
             
             return Disposables.create()
         }
@@ -112,7 +112,7 @@ public enum RxMediaPickerError: Error {
             picker.allowsEditing = editable
             picker.delegate = self
             
-            self.presentPicker(picker)
+            self.present(picker)
             
             return Disposables.create()
         }
@@ -137,7 +137,12 @@ public enum RxMediaPickerError: Error {
                       picker: UIImagePickerController) {
         guard let videoURL = info[UIImagePickerController.InfoKey.mediaURL] as? URL else {
             observer.on(.error(RxMediaPickerError.generalError))
-            dismissPicker(picker)
+            
+          
+          
+          
+          
+          (picker)
             return
         }
         
@@ -165,7 +170,7 @@ public enum RxMediaPickerError: Error {
                 case .failed: fallthrough
                 case .cancelled:
                     observer.on(.error(RxMediaPickerError.generalError))
-                    self.dismissPicker(picker)
+                    self.dismiss(picker)
                 default: break
                 }
             })
@@ -186,16 +191,16 @@ public enum RxMediaPickerError: Error {
             observer.on(.completed)
         }
         
-        dismissPicker(picker)
+        dismiss(picker)
     }
 
-    fileprivate func presentPicker(_ picker: UIImagePickerController) {
+    fileprivate func present(_ picker: UIImagePickerController) {
         DispatchQueue.main.async { [weak self] in
             self?.delegate?.present(picker: picker)
         }
     }
     
-    fileprivate func dismissPicker(_ picker: UIImagePickerController) {
+    fileprivate func dismiss(_ picker: UIImagePickerController) {
         DispatchQueue.main.async { [weak self] in
             self?.delegate?.dismiss(picker: picker)
         }
@@ -207,7 +212,7 @@ public enum RxMediaPickerError: Error {
             switch action {
             case .photo(let observer):
                 processPhoto(info: info, observer: observer)
-                dismissPicker(picker)
+                dismiss(picker)
             case .video(let observer, let maxDuration):
                 processVideo(info: info, observer: observer, maxDuration: maxDuration, picker: picker)
             }
@@ -215,7 +220,7 @@ public enum RxMediaPickerError: Error {
     }
     
     open func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-        dismissPicker(picker)
+        dismiss(picker)
         
         if let action = currentAction {
             switch action {

@@ -80,8 +80,8 @@ func selectImage(source: UIImagePickerControllerSourceType = .PhotoLibrary,
 ### RxMediaPickerDelegate
 
 ```swift
-func presentPicker(picker: UIImagePickerController)
-func dismissPicker(picker: UIImagePickerController) 
+func present(picker: UIImagePickerController)
+func dismiss(picker: UIImagePickerController) 
 ```
 
 To be able to use RxMediaPicker you will need to adopt the protocol RxMediaPickerDelegate. This is required to indicate RxMediaPicker how the camera/photos picker should be presented. For example, you may want to present the photos library picker in a popover on the iPad, and use the entire screen on the iPhone.
