@@ -126,9 +126,8 @@ public enum RxMediaPickerError: Error {
         }
 
         let editedImage = info[UIImagePickerController.InfoKey.editedImage] as? UIImage
-
-        observer.on(.next((image, editedImage)))
-        observer.on(.completed)
+        observer.onNext((image, editedImage))
+        observer.onCompleted()
     }
     
     func processVideo(info: [UIImagePickerController.InfoKey : Any],
@@ -137,12 +136,7 @@ public enum RxMediaPickerError: Error {
                       picker: UIImagePickerController) {
         guard let videoURL = info[UIImagePickerController.InfoKey.mediaURL] as? URL else {
             observer.on(.error(RxMediaPickerError.generalError))
-            
-          
-          
-          
-          
-          (picker)
+            dismiss(picker)
             return
         }
         
@@ -207,7 +201,7 @@ public enum RxMediaPickerError: Error {
     }
     
     // MARK: UIImagePickerControllerDelegate
-    public func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+    open func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
         if let action = currentAction {
             switch action {
             case .photo(let observer):
