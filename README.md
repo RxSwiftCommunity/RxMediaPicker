@@ -2,6 +2,12 @@
 
 RxMediaPicker is a RxSwift wrapper built around UIImagePickerController consisting in a simple interface for common actions like picking photos or videos stored on the device, recording a video or taking a photo.
 
+![Swift](https://img.shields.io/badge/Swift-4.2-orange.svg)
+[![Version](https://img.shields.io/cocoapods/v/RxMediaPicker.svg?style=flat)](http://cocoapods.org/pods/RxMediaPicker)
+[![License](https://img.shields.io/cocoapods/l/RxMediaPicker.svg?style=flat)](http://cocoapods.org/pods/RxMediaPicker)
+[![Platform](https://img.shields.io/cocoapods/p/RxMediaPicker.svg?style=flat)](http://cocoapods.org/pods/RxMediaPicker)
+[![Carthage compatible](https://img.shields.io/badge/Carthage-compatible-4BC51D.svg?style=flat)](https://github.com/Carthage/Carthage)
+
 If you ever used UIImagePickerController you know how it can become quite verbose and introduce some unnecessary complexity, as you use the same class to do everything, from picking photos or videos from the library, recording videos, etc. At the same time, you have all these different properties and methods which can be used when you are dealing with photos, others for when you're dealing with videos, and others in all cases.
 
 If you're interested, check the resulting article [RxMediaPicker — picking photos and videos the cool kids’ way!](https://medium.com/@ruipfcosta/rxmediapicker-picking-photos-and-videos-the-cool-kids-way-4df81df0c778#.1wq0xp99o)
@@ -45,7 +51,7 @@ func recordVideo() {
         }, onDisposed: {
             print("Disposed")
         })
-        .addDisposableTo(disposeBag)
+        .disposed(by: disposeBag)
 }
 ```
 
@@ -56,24 +62,26 @@ func recordVideo() {
 Based on their names, the operations available on RxMediaPicker should be self-explanatory. You can record a video, or pick an existing one stored on the device, and the same thing happens for photos. The only thing to note here is that picking a video will get you the video url, and picking a photo will get you a tuple consisting in the original image and an optional edited image (if any edits were made).
 
 ```swift
-func recordVideo(device device: UIImagePickerControllerCameraDevice = .Rear, 
-                 quality: UIImagePickerControllerQualityType = .TypeMedium, 
-                 maximumDuration: NSTimeInterval = 600, editable: Bool = false) -> Observable<NSURL>
+func recordVideo(device: UIImagePickerController.CameraDevice = .rear, 
+                 quality: UIImagePickerController.QualityType = .typeMedium, 
+                 maximumDuration: TimeInterval = 600,
+                 editable: Bool = false) -> Observable<URL>
 ```
 
 ```swift
-func selectVideo(source: UIImagePickerControllerSourceType = .PhotoLibrary, 
-                 maximumDuration: NSTimeInterval = 600, editable: Bool = false) -> Observable<NSURL>
+func selectVideo(source: UIImagePickerController.SourceType = .photoLibrary, 
+                 maximumDuration: TimeInterval = 600,
+                 editable: Bool = false) -> Observable<URL>
 ```
 
 ```swift
-func takePhoto(device device: UIImagePickerControllerCameraDevice = .Rear, 
-               flashMode: UIImagePickerControllerCameraFlashMode = .Auto, 
+func takePhoto(device: UIImagePickerController.CameraDevice = .rear, 
+               flashMode: UIImagePickerController.CameraFlashMode = .auto, 
                editable: Bool = false) -> Observable<(UIImage, UIImage?)>
 ```
 
 ```swift
-func selectImage(source: UIImagePickerControllerSourceType = .PhotoLibrary, 
+func selectImage(source: UIImagePickerController.SourceType = .photoLibrary, 
                  editable: Bool = false) -> Observable<(UIImage, UIImage?)>
 ```
 
