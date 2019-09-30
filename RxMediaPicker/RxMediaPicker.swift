@@ -18,7 +18,7 @@ public enum RxMediaPickerError: Error {
 @objc public protocol RxMediaPickerDelegate {
     func present(picker: UIImagePickerController)
     func dismiss(picker: UIImagePickerController)
-}
+} 
 
 @objc open class RxMediaPicker: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
     
