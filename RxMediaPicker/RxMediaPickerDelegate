@@ -4,12 +4,12 @@ import RxMediaPicker
 
 extension RxMediaPickerDelegate where Self: UIViewController {
     
-    func presentPicker(picker: UIImagePickerController) {
-        self.presentViewController(picker, animated: true, completion: .None)
+    func present(picker: UIImagePickerController) {
+      self.present(picker, animated: true, completion: .none)
     }
     
-    func dismissPicker(picker: UIImagePickerController) {
-        self.dismissViewControllerAnimated(true, completion: .None)
+    func dismiss(picker: UIImagePickerController) {
+      self.dismiss(animated: true, completion: .none)
     }
     
 }
