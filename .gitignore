@@ -84,7 +84,8 @@ xcuserdata
 .LSOverride
 
 # Icon must end with two \r
-Icon
+Icon
+
 
 # Thumbnails
 ._*
@@ -110,3 +111,7 @@ Temporary Items
 Carthage
 Carthage.checkout
 Carthage.build
+
+### SPM ###
+/.build
+/Packages
