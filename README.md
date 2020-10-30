@@ -138,6 +138,26 @@ github "RxSwiftCommunity/RxMediaPicker" "master"
 
 Run `carthage` to build the framework and drag the built `RxMediaPicker.framework` into your Xcode project.
 
+### [Swift Package Manager](https://github.com/apple/swift-package-manager)
+
+Create a `Package.swift` file.
+
+```swift
+// swift-tools-version:5.0
+
+import PackageDescription
+
+let package = Package(
+  name: "YOUR_PROJECT_NAME",
+  dependencies: [
+    .package(url: "https://github.com/RxSwiftCommunity/RxMediaPicker.git", from: "2.0.0")
+  ],
+  targets: [
+    .target(name: "YOUR_PROJECT_NAME", dependencies: ["RxMediaPicker"])
+  ]
+)
+```
+
 ## Credits
 
 Owned and maintained by Rui Costa ([@ruipfcosta](https://twitter.com/ruipfcosta)). 
